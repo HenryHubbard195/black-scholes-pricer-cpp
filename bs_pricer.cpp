@@ -1,11 +1,11 @@
-#include <iostream>   
+#include <iostream>  
 #include <cmath>      
 #include <string>     
 #include <stdexcept>  
 #include <map>        
+#include "bs_pricer.hpp"
 
 // normal CDF and PDF:
-
 double norm_cdf(double x) {
     return 0.5 * (1.0 + std::erf(x / std::sqrt(2.0)));
 }
@@ -14,28 +14,10 @@ double norm_pdf(double x) {
     return (1.0 / std::sqrt(2.0 * M_PI)) * std::exp(-0.5 * x * x);
 }
 
-struct PriceResult {
-    double price;
-    double d1;
-    double d2;
-};
-enum class OptionType { Call, Put };
-
-struct DParams { double d1, d2; };
-DParams compute_d(double S, double K, double T, double r, double vol) {
-    double d1 = std::log(S / K) + (r + 0.5 * vol * vol) * T;
-    d1 /= vol * std::sqrt(T);
-    double d2 = d1 - vol * std::sqrt(T);
-    return {d1, d2};
-}
-
 // pricer:
 
 PriceResult bs_price(double S, double K, double T, double r, double vol,
-                      const std::string& option_type = "call") { if (S <= 0 || K <= 0 || T <= 0 || vol <= 0) {
-    throw std::invalid_argument("S, K, T, and vol must be positive");
-}
-
+                      const std::string& option_type) {
     double d1 = (std::log(S / K) + (r + 0.5 * vol * vol) * T) / (vol * std::sqrt(T));
     double d2 = d1 - vol * std::sqrt(T);
 
@@ -53,16 +35,8 @@ PriceResult bs_price(double S, double K, double T, double r, double vol,
 
 // greeks:
 
-struct Greeks {
-    double delta, gamma, vega, theta, rho;
-};
-if (S <= 0 || K <= 0 || T <= 0 || vol <= 0) {
-    throw std::invalid_argument("S, K, T, and vol must be positive");
-}
-
-
 Greeks bs_greeks(double S, double K, double T, double r, double vol,
-                  const std::string& option_type = "call") {
+                  const std::string& option_type) {
     double d1 = (std::log(S / K) + (r + 0.5 * vol * vol) * T) / (vol * std::sqrt(T));
     double d2 = d1 - vol * std::sqrt(T);
 
@@ -89,12 +63,11 @@ Greeks bs_greeks(double S, double K, double T, double r, double vol,
     return Greeks{delta, gamma, vega, theta, rho};
 }
 
-// implied volatility (newton-rahpson):
-
+// implied volatility (newton-raphson):
 double implied_vol(double market_price, double S, double K, double T, double r,
-                    const std::string& option_type = "call",
-                    double initial_guess = 0.2, double tolerance = 1e-6,
-                    int max_iterations = 100) {
+                    const std::string& option_type,
+                    double initial_guess, double tolerance,
+                    int max_iterations) {
     double vol = initial_guess;
     for (int i = 0; i < max_iterations; ++i) {
         if (vol <= 0.001 || vol > 5.0) {
@@ -115,7 +88,6 @@ double implied_vol(double market_price, double S, double K, double T, double r,
 }
 
 // put-call parity check:
-
 void check_put_call_parity(double S, double K, double T, double r, double vol) {
     double call_price = bs_price(S, K, T, r, vol, "call").price;
     double put_price  = bs_price(S, K, T, r, vol, "put").price;
@@ -132,23 +104,4 @@ void check_put_call_parity(double S, double K, double T, double r, double vol) {
     std::cout << "Put-call parity holds\n";
 }
 
-// main loop:
 
-int main() {
-    double S = 100, K = 105, T = 0.5, r = 0.045, vol = 0.25;
-
-    PriceResult result = bs_price(S, K, T, r, vol, "call");
-    Greeks greeks = bs_greeks(S, K, T, r, vol, "call");
-
-    std::cout << "Call price: $" << result.price << "\n";
-    std::cout << "Delta: " << greeks.delta << " Gamma: " << greeks.gamma
-               << " Vega: " << greeks.vega << " Theta: " << greeks.theta
-               << " Rho: " << greeks.rho << "\n";
-
-    check_put_call_parity(S, K, T, r, vol);
-
-    double iv = implied_vol(result.price, S, K, T, r, "call");
-    std::cout << "Recovered implied vol: " << iv << " (should match input vol=" << vol << ")\n";
-
-    return 0;  
-}
