@@ -19,11 +19,23 @@ struct PriceResult {
     double d1;
     double d2;
 };
+enum class OptionType { Call, Put };
+
+struct DParams { double d1, d2; };
+DParams compute_d(double S, double K, double T, double r, double vol) {
+    double d1 = std::log(S / K) + (r + 0.5 * vol * vol) * T;
+    d1 /= vol * std::sqrt(T);
+    double d2 = d1 - vol * std::sqrt(T);
+    return {d1, d2};
+}
 
 // pricer:
 
 PriceResult bs_price(double S, double K, double T, double r, double vol,
-                      const std::string& option_type = "call") {
+                      const std::string& option_type = "call") { if (S <= 0 || K <= 0 || T <= 0 || vol <= 0) {
+    throw std::invalid_argument("S, K, T, and vol must be positive");
+}
+
     double d1 = (std::log(S / K) + (r + 0.5 * vol * vol) * T) / (vol * std::sqrt(T));
     double d2 = d1 - vol * std::sqrt(T);
 
@@ -44,6 +56,10 @@ PriceResult bs_price(double S, double K, double T, double r, double vol,
 struct Greeks {
     double delta, gamma, vega, theta, rho;
 };
+if (S <= 0 || K <= 0 || T <= 0 || vol <= 0) {
+    throw std::invalid_argument("S, K, T, and vol must be positive");
+}
+
 
 Greeks bs_greeks(double S, double K, double T, double r, double vol,
                   const std::string& option_type = "call") {
