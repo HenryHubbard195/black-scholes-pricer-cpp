@@ -1,14 +1,9 @@
-#include <iostream>   // like `print()` — gives you std::cout
-#include <cmath>      // like `math` and `scipy.stats.norm` — gives you erf, exp, log, sqrt
-#include <string>     // C++'s text type, std::string (vs Python's built-in str)
-#include <stdexcept>  // gives you std::invalid_argument, similar to raising ValueError
-#include <map>        // similar to a Python dict — used for bs_greeks' return value
+#include <iostream>   
+#include <cmath>      
+#include <string>     
+#include <stdexcept>  
+#include <map>        
 
-// --- Normal CDF and PDF -----------------------------------------------
-// scipy.stats.norm.cdf(x)  ->  norm_cdf(x)
-// scipy.stats.norm.pdf(x)  ->  norm_pdf(x)
-// There's no built-in normal distribution in <cmath>, but the CDF has a
-// closed-form relationship to erf(), the "error function":
 double norm_cdf(double x) {
     return 0.5 * (1.0 + std::erf(x / std::sqrt(2.0)));
 }
@@ -17,11 +12,6 @@ double norm_pdf(double x) {
     return (1.0 / std::sqrt(2.0 * M_PI)) * std::exp(-0.5 * x * x);
 }
 
-// --- Pricer --------------------------------------------------------------
-// Your Python bs_price() returns a tuple (price, d1, d2). C++ functions can
-// only return ONE value by default, so we define a small "struct" — think
-// of it as a lightweight, fixed-shape dict/namedtuple — to carry all three
-// back together.
 struct PriceResult {
     double price;
     double d1;
@@ -45,8 +35,6 @@ PriceResult bs_price(double S, double K, double T, double r, double vol,
     return PriceResult{price, d1, d2};
 }
 
-// --- Greeks ----------------------------------------------------------------
-// Same idea: Python returned a dict of 5 values, so we use a struct again.
 struct Greeks {
     double delta, gamma, vega, theta, rho;
 };
