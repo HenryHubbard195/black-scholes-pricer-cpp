@@ -115,12 +115,17 @@ The C++ and Python implementations were benchmarked using the **same 100,000 opt
 |---|---:|---:|
 | Options per run | 100,000 | 100,000 |
 | Runs | 10 | 10 |
-| Median runtime | 3.476408 s | 0.002614 s |
-| Median per option | 34.764 μs | 0.026 μs |
+| Median runtime | 3.493939 s | 0.002583 s |
+| Median per option | 34.939 μs | 0.026 μs |
 
-The benchmark therefore measured approximately **1,330× lower runtime** for the C++ implementation on the test machine.
+The C++ implementation achieved approximately **1,353× lower median runtime** than the Python implementation on the test machine.
 
-The first and last option prices were also identical between implementations, providing an additional check that both were processing the same inputs consistently.
+Both implementations produced identical results for the first and last benchmark inputs:
+
+- First price: **28.522560**
+- Last price: **23.527706**
+
+The benchmark inputs are stored in `benchmark_inputs.csv`, allowing the comparison to be reproduced using the same dataset.
 
 ## Project Structure
 
