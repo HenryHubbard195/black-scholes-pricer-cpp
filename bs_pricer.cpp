@@ -4,6 +4,8 @@
 #include <stdexcept>  
 #include <map>        
 
+// normal CDF and PDF:
+
 double norm_cdf(double x) {
     return 0.5 * (1.0 + std::erf(x / std::sqrt(2.0)));
 }
@@ -17,6 +19,8 @@ struct PriceResult {
     double d1;
     double d2;
 };
+
+// pricer:
 
 PriceResult bs_price(double S, double K, double T, double r, double vol,
                       const std::string& option_type = "call") {
@@ -34,6 +38,8 @@ PriceResult bs_price(double S, double K, double T, double r, double vol,
 
     return PriceResult{price, d1, d2};
 }
+
+// greeks:
 
 struct Greeks {
     double delta, gamma, vega, theta, rho;
@@ -67,7 +73,8 @@ Greeks bs_greeks(double S, double K, double T, double r, double vol,
     return Greeks{delta, gamma, vega, theta, rho};
 }
 
-// --- Implied volatility (Newton-Raphson) ------------------------------
+// implied volatility (newton-rahpson):
+
 double implied_vol(double market_price, double S, double K, double T, double r,
                     const std::string& option_type = "call",
                     double initial_guess = 0.2, double tolerance = 1e-6,
@@ -91,7 +98,8 @@ double implied_vol(double market_price, double S, double K, double T, double r,
     throw std::runtime_error("Implied vol did not converge");
 }
 
-// --- Put-call parity check --------------------------------------------
+// put-call parity check:
+
 void check_put_call_parity(double S, double K, double T, double r, double vol) {
     double call_price = bs_price(S, K, T, r, vol, "call").price;
     double put_price  = bs_price(S, K, T, r, vol, "put").price;
@@ -108,11 +116,8 @@ void check_put_call_parity(double S, double K, double T, double r, double vol) {
     std::cout << "Put-call parity holds\n";
 }
 
-// --- main() : every C++ program needs exactly one of these -------------
-// This is your notebook's bottom "example usage" cell. main() is the
-// entry point the OS calls when you run the compiled program - Python
-// scripts don't need an equivalent because the whole file just runs
-// top-to-bottom.
+// main loop:
+
 int main() {
     double S = 100, K = 105, T = 0.5, r = 0.045, vol = 0.25;
 
@@ -129,5 +134,5 @@ int main() {
     double iv = implied_vol(result.price, S, K, T, r, "call");
     std::cout << "Recovered implied vol: " << iv << " (should match input vol=" << vol << ")\n";
 
-    return 0;  // 0 tells the OS "program finished with no errors"
+    return 0;  
 }
